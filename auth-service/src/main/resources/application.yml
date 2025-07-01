@@ -1,0 +1,49 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=resort_auth;encrypt=true;trustServerCertificate=true
+    username: resort_admin
+    password: ResortAdmin@123
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        '[format_sql]': true
+
+#   mvc:
+#     pathmatch:
+#       matching-strategy: ant_path_matcher  # Ensures compatibility with Spring Security filter patterns
+
+# JWT Configuration
+jwt:
+  secret: HuwSnDiVZJYzhoQ7fIBLBc3CuIzzwY3VY6mvAxfKX2ZoJYJ0+iqxnfKW1NjNAnPKwHsCC/gLAOxRZt5bsySQtA==  # Base64 encoded secret (e.g., "secret123" => "c2VjcmV0MTIz")
+  expirationMs: 86400000  # 24 hours in milliseconds
+
+# Logging config (optional but useful)
+logging:
+  level:
+    root: INFO
+    '[org.springframework.security]': DEBUG
+    '[com.resort.auth]': DEBUG
+
+# Management (optional: for actuator if used)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
