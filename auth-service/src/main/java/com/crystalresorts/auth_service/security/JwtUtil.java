@@ -116,4 +116,18 @@ public class JwtUtil {
         }
         return false;
     }
+
+    // public List<String> extractRoles(String token) {
+    //     Claims claims = extractClaims(token);
+    //     Object rolesObj = claims.get("roles");
+    
+    //     if (rolesObj instanceof Collection<?>) {
+    //         return ((Collection<?>) rolesObj)
+    //                 .stream()
+    //                 .map(Object::toString)
+    //                 .collect(Collectors.toList());
+    //     }
+    
+    //     return Collections.emptyList();
+    // }
 }
