@@ -1,5 +1,6 @@
 package com.crystalresorts.auth_service.service;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -112,6 +113,23 @@ public class AuthServiceImpl implements AuthService{
                 .token(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
+    }
+
+    @Override
+    public void logout(String accessToken, String refreshToken) {
+        if (!jwtUtil.validateToken(accessToken)) {
+            throw new RuntimeException("Invalid access token");
+        }
+
+        String username = jwtUtil.extractUsername(accessToken);
+
+        // Remove refresh token
+        refreshTokenService.deleteRefreshToken(username);
+
+        // Blacklist access token
+        Date expiry = jwtUtil.extractExpiration(accessToken);
+        long ttl = expiry.getTime() - System.currentTimeMillis();
+        refreshTokenService.blacklistAccessToken(accessToken, ttl);
     }
 
 }

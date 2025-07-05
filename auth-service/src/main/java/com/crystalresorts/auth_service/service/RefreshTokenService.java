@@ -29,5 +29,16 @@ public class RefreshTokenService {
     public void deleteRefreshToken(String username) {
         redisTemplate.delete("refresh:" + username);
     }
+
+    public void blacklistAccessToken(String token, long expiryMillis) {
+        redisTemplate.opsForValue().set("blacklist:" + token, "true", Duration.ofMillis(expiryMillis));
+    }
+    
+    public boolean isAccessTokenBlacklisted(String token) {
+        return Boolean.TRUE.toString().equals(
+            redisTemplate.opsForValue().get("blacklist:" + token)
+        );
+    }
+    
 }
 

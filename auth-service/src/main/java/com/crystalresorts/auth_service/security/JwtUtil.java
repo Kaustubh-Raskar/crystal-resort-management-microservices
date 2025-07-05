@@ -140,5 +140,9 @@ public class JwtUtil {
                    .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                    .compact();
     }
+
+    public Date extractExpiration(String token) {
+        return extractClaims(token).getExpiration();
+    }    
     
 }
