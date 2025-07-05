@@ -5,17 +5,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.crystalresorts.auth_service.dto.JwtRequest;
 import com.crystalresorts.auth_service.dto.JwtResponse;
+import com.crystalresorts.auth_service.dto.RefreshTokenRequest;
 import com.crystalresorts.auth_service.dto.TokenValidationResponse;
 import com.crystalresorts.auth_service.dto.UserDto;
 import com.crystalresorts.auth_service.security.JwtUtil;
 import com.crystalresorts.auth_service.service.AuthService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Set;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,5 +64,16 @@ public class AuthController {
         return ResponseEntity.ok(
             new TokenValidationResponse(true, username, new ArrayList<>(roles), null)
         );
+    }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refresh(@RequestBody RefreshTokenRequest refreshRequest) {
+        try {
+            JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 }

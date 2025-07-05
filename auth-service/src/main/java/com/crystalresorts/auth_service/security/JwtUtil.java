@@ -1,6 +1,7 @@
 package com.crystalresorts.auth_service.security;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -130,4 +131,14 @@ public class JwtUtil {
     
     //     return Collections.emptyList();
     // }
+
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                   .setSubject(username)
+                   .setIssuedAt(new Date())
+                   .setExpiration(new Date(System.currentTimeMillis() + Duration.ofDays(7).toMillis()))
+                   .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                   .compact();
+    }
+    
 }
