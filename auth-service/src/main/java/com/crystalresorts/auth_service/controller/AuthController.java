@@ -23,7 +23,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
+/**
+ * @author Kaustubh Raskar
+ * Created: July 2025
+ */
 
 @RestController
 @RequestMapping("api/auth")

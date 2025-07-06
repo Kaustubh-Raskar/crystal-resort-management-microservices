@@ -8,6 +8,10 @@ import com.crystalresorts.auth_service.repository.RoleRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @author Kaustubh Raskar
+ * Created: July 2025
+ */
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner{
