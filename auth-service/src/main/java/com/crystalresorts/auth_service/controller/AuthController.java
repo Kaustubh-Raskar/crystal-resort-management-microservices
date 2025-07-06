@@ -5,21 +5,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.crystalresorts.auth_service.dto.JwtRequest;
 import com.crystalresorts.auth_service.dto.JwtResponse;
+import com.crystalresorts.auth_service.dto.LogoutRequest;
+import com.crystalresorts.auth_service.dto.RefreshTokenRequest;
 import com.crystalresorts.auth_service.dto.TokenValidationResponse;
 import com.crystalresorts.auth_service.dto.UserDto;
 import com.crystalresorts.auth_service.security.JwtUtil;
 import com.crystalresorts.auth_service.service.AuthService;
+import com.crystalresorts.auth_service.service.RefreshTokenService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Set;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 @RestController
@@ -29,6 +32,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
@@ -54,6 +58,9 @@ public class AuthController {
         String token = authHeader.substring(7); // remove "Bearer "
 
         if (!jwtUtil.validateToken(token)) {
+            if (refreshTokenService.isAccessTokenBlacklisted(token)) {
+                System.out.println("Token is blacklisted");
+            }
             return ResponseEntity.ok(
                 new TokenValidationResponse(false, null, null, "Invalid or expired token")
             );
@@ -65,5 +72,32 @@ public class AuthController {
         return ResponseEntity.ok(
             new TokenValidationResponse(true, username, new ArrayList<>(roles), null)
         );
+    }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refresh(@RequestBody RefreshTokenRequest refreshRequest) {
+        try {
+            JwtResponse response = authService.refreshToken(refreshRequest.getRefreshToken());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody LogoutRequest logoutRequest) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Missing or invalid Authorization header");
+        }
+
+        String accessToken = authHeader.substring(7); // Strip "Bearer "
+
+        authService.logout(accessToken, logoutRequest.getRefreshToken());
+
+        return ResponseEntity.ok("Successfully logged out");
     }
 }

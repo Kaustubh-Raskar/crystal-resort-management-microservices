@@ -1,4 +1,4 @@
-package com.crystalresorts.auth_service.security;
+package com.crystalresorts.api_gateway.util;
 
 import java.security.Key;
 import java.time.Duration;
@@ -117,20 +117,6 @@ public class JwtUtil {
         }
         return false;
     }
-
-    // public List<String> extractRoles(String token) {
-    //     Claims claims = extractClaims(token);
-    //     Object rolesObj = claims.get("roles");
-    
-    //     if (rolesObj instanceof Collection<?>) {
-    //         return ((Collection<?>) rolesObj)
-    //                 .stream()
-    //                 .map(Object::toString)
-    //                 .collect(Collectors.toList());
-    //     }
-    
-    //     return Collections.emptyList();
-    // }
 
     public String generateRefreshToken(String username) {
         return Jwts.builder()

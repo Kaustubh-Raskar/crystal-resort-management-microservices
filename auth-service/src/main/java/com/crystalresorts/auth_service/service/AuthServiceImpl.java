@@ -1,5 +1,6 @@
 package com.crystalresorts.auth_service.service;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
 
 
@@ -33,19 +35,24 @@ public class AuthServiceImpl implements AuthService{
         if(!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())){
             throw new RuntimeException("Invalid Credentials");
         }                          
+    
         Set<String> roleNames = userEntity.getRoles().stream()
                 .map(Role::getRoleName)
                 .collect(Collectors.toSet());
-
+    
         String token = jwtUtil.generateToken(userEntity.getUsername(), roleNames);
-
+        String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername());
+    
+        refreshTokenService.storeRefreshToken(userEntity.getUsername(), refreshToken); // stores in Redis
+    
         return JwtResponse.builder()
-                          .username(userEntity.getUsername())
-                          .fullName(userEntity.getFullName())
-                          .token(token)
-                          .roles(roleNames)
-                          .build();
-    }
+                            .username(userEntity.getUsername())
+                            .fullName(userEntity.getFullName())
+                            .token(token)
+                            .refreshToken(refreshToken)
+                            .roles(roleNames)
+                            .build();
+    }    
 
 
     @Override
@@ -73,6 +80,56 @@ public class AuthServiceImpl implements AuthService{
                       .fullName(user.getFullName())
                       .roleNames(Set.of(defaultRole.getRoleName()))
                       .build();
+    }
+
+    @Override
+    public JwtResponse refreshToken(String refreshToken) {
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String username = jwtUtil.extractUsername(refreshToken);
+
+        if (!refreshTokenService.validateRefreshToken(username, refreshToken)) {
+            throw new RuntimeException("Refresh token mismatch or expired");
+        }
+
+        UserEntity user = userRepository.findByUsername(username)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Set<String> roles = user.getRoles().stream()
+                                .map(Role::getRoleName)
+                                .collect(Collectors.toSet());
+
+        String newAccessToken = jwtUtil.generateToken(username, roles);
+        String newRefreshToken = jwtUtil.generateRefreshToken(username);
+
+        refreshTokenService.storeRefreshToken(username, newRefreshToken); // overwrite Redis
+
+        return JwtResponse.builder()
+                .username(username)
+                .fullName(user.getFullName())
+                .roles(roles)
+                .token(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+    }
+
+    @Override
+    public void logout(String accessToken, String refreshToken) {
+        if (!jwtUtil.validateToken(accessToken)) {
+            throw new RuntimeException("Invalid access token");
+        }
+
+        String username = jwtUtil.extractUsername(accessToken);
+
+        // Remove refresh token
+        refreshTokenService.deleteRefreshToken(username);
+
+        // Blacklist access token
+        Date expiry = jwtUtil.extractExpiration(accessToken);
+        long ttl = expiry.getTime() - System.currentTimeMillis();
+        refreshTokenService.blacklistAccessToken(accessToken, ttl);
     }
 
 }

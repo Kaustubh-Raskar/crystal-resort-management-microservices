@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class JwtResponse {
-    private String token;
+    private String token;               // Access Token
+    private String refreshToken;       // Refresh Token
     private String username;
     private String fullName;
     private Set<String> roles;
