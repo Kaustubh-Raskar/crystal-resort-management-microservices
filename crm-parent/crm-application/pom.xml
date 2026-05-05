@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent = crm-parent -->
+    <parent>
+        <groupId>com.crystalresorts</groupId>
+        <artifactId>crm-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>crm-application</artifactId>
+    <packaging>pom</packaging>
+    <name>crm-application</name>
+    <description>CRM Application Aggregator</description>
+
+    <modules>
+        <module>eureka-server</module>
+        <module>auth-service</module>
+        <module>api-gateway</module>
+        <module>resort-service</module>
+    </modules>
+
+</project>
+

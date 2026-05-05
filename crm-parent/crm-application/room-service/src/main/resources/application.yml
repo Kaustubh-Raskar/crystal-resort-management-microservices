@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: ROOM-SERVICE
+  
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=RoomDB;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: YourPassword123!
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
+    show-sql: false
+    open-in-view: false
+  
+  security:
+    user:
+      name: admin
+      password: admin123
+
+server:
+  port: 8083
+  servlet:
+    context-path: /
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+jwt:
+  secret: MySecretKeyForJWTTokenGenerationAndValidationPurposesOnly123456789
+  expirationMs: 86400000
+
+logging:
+  level:
+    root: INFO
+    com.crystalresorts: DEBUG
+    org.hibernate.SQL: DEBUG

@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "EurekaServerApplication",
+            "request": "launch",
+            "mainClass": "com.crystalresorts.eureka_server.EurekaServerApplication"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ResortServiceApplication<resort-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.crystalresorts.resortservice.ResortServiceApplication",
+            "projectName": "resort-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

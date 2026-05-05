@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      forwarded-headers-strategy: framework
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+
+        - id: resort-service
+          uri: lb://RESORT-SERVICE
+          predicates:
+            - Path=/api/resorts/**
+            
+  logging:
+    level:
+      org.springframework.cloud.gateway: DEBUG
+      # org.springframework.security: DEBUG
+      com.crystalresorts.api_gateway: DEBUG
+      org.springframework.security: TRACE
+      reactor.netty.http.server: DEBUG
+
+# JWT Configuration
+jwt:
+  secret: HuwSnDiVZJYzhoQ7fIBLBc3CuIzzwY3VY6mvAxfKX2ZoJYJ0+iqxnfKW1NjNAnPKwHsCC/gLAOxRZt5bsySQtA==  # Base64 encoded secret (e.g., "secret123" => "c2VjcmV0MTIz")
+  expirationMs: 86400000  # 24 hours in milliseconds
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
