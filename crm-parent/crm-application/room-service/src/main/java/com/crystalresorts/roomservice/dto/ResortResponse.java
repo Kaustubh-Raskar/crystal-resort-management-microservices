@@ -1,12 +1,12 @@
 package com.crystalresorts.roomservice.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Data
 @Getter
@@ -22,4 +22,24 @@ public class ResortResponse {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
 }

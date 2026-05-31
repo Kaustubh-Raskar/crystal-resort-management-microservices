@@ -1,23 +1,24 @@
 package com.crystalresorts.roomservice.service;
 
-import com.crystalresorts.roomservice.client.ResortClient;
-import com.crystalresorts.roomservice.dto.RoomRequest;
-import com.crystalresorts.roomservice.dto.RoomResponse;
-import com.crystalresorts.roomservice.dto.ResortResponse;
-import com.crystalresorts.roomservice.dto.RoomWithResortResponse;
-import com.crystalresorts.roomservice.entity.RoomEntity;
-import com.crystalresorts.roomservice.mapper.RoomMapper;
-import com.crystalresorts.roomservice.repository.RoomRepository;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import com.crystalresorts.roomservice.client.ResortClient;
+import com.crystalresorts.roomservice.dto.ResortResponse;
+import com.crystalresorts.roomservice.dto.RoomRequest;
+import com.crystalresorts.roomservice.dto.RoomResponse;
+import com.crystalresorts.roomservice.dto.RoomWithResortResponse;
+import com.crystalresorts.roomservice.entity.RoomEntity;
+import com.crystalresorts.roomservice.mapper.RoomMapper;
+import com.crystalresorts.roomservice.repository.RoomRepository;
 
 @Service
 @Transactional
@@ -43,7 +44,6 @@ public class RoomServiceImpl implements RoomService {
         log.info("Creating room with room number: {} for resort: {}", 
                 request.getRoomNumber(), request.getResortId());
 
-        // Check if room already exists
         roomRepository.findByRoomNumberAndResortId(request.getRoomNumber(), request.getResortId())
                 .ifPresent(room -> {
                     throw new IllegalArgumentException(
@@ -141,14 +141,12 @@ public class RoomServiceImpl implements RoomService {
             Long resortId, LocalDate startDate, LocalDate endDate) {
         log.info("Fetching available rooms for resort {} between {} and {}", resortId, startDate, endDate);
 
-        // Step 1: Get rooms for the resort
         List<RoomEntity> rooms = roomRepository.findByResortId(resortId);
         if (rooms.isEmpty()) {
             log.warn("No rooms found for resort {}", resortId);
             return new ArrayList<>();
         }
 
-        // Step 2: Extract room IDs and check availability
         List<Long> roomIds = rooms.stream().map(RoomEntity::getId).collect(Collectors.toList());
         List<Long> availableRoomIds = roomAvailabilityService.getRoomsAvailableForRange(
                 roomIds, startDate, endDate);
@@ -158,7 +156,6 @@ public class RoomServiceImpl implements RoomService {
             return new ArrayList<>();
         }
 
-        // Step 3: Fetch resort info via Feign client
         ResortResponse resort;
         try {
             resort = resortClient.getResortById(resortId);
@@ -167,27 +164,28 @@ public class RoomServiceImpl implements RoomService {
             throw new RuntimeException("Failed to fetch resort details", e);
         }
 
-        // Step 4: Build enriched response
         List<RoomEntity> availableRooms = rooms.stream()
                 .filter(r -> availableRoomIds.contains(r.getId()))
                 .collect(Collectors.toList());
 
         return availableRooms.stream()
-                .map(room -> RoomWithResortResponse.builder()
-                        .roomId(room.getId())
-                        .roomNumber(room.getRoomNumber())
-                        .roomType(room.getType())
-                        .price(room.getBasePrice().doubleValue())
-                        .capacity(room.getCapacity())
-                        .status(room.getStatus())
-                        .resortId(resort.getId())
-                        .resortName(resort.getName())
-                        .city(resort.getCity())
-                        .address(resort.getAddress())
-                        .rating(resort.getRating())
-                        .createdAt(room.getCreatedAt())
-                        .updatedAt(room.getUpdatedAt())
-                        .build())
+                .map(room -> {
+                    RoomWithResortResponse response = new RoomWithResortResponse();
+                    response.setRoomId(room.getId());
+                    response.setRoomNumber(room.getRoomNumber());
+                    response.setRoomType(room.getType());
+                    response.setPrice(room.getBasePrice() != null ? room.getBasePrice().doubleValue() : null);
+                    response.setCapacity(room.getCapacity());
+                    response.setStatus(room.getStatus());
+                    response.setResortId(resort.getId());
+                    response.setResortName(resort.getName());
+                    response.setCity(resort.getCity());
+                    response.setAddress(resort.getAddress());
+                    response.setRating(resort.getRating());
+                    response.setCreatedAt(room.getCreatedAt());
+                    response.setUpdatedAt(room.getUpdatedAt());
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 }

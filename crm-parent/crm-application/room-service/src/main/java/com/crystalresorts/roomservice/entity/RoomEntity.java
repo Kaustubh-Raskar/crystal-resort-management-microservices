@@ -1,14 +1,21 @@
 package com.crystalresorts.roomservice.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Rooms", schema = "dbo")
@@ -34,7 +41,7 @@ public class RoomEntity {
     private Integer floor;
 
     @Column(name = "Type", length = 50)
-    private String type; // Single, Double, Suite, Deluxe, etc.
+    private String type;
 
     @Column(name = "Capacity")
     private Integer capacity;
@@ -46,7 +53,7 @@ public class RoomEntity {
     private String description;
 
     @Column(name = "Status", length = 20)
-    private String status; // AVAILABLE, MAINTENANCE, OCCUPIED, CLOSED
+    private String status;
 
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
@@ -66,5 +73,49 @@ public class RoomEntity {
     @PreUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getResortId() {
+        return resortId;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public Integer getFloor() {
+        return floor;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public java.math.BigDecimal getBasePrice() {
+        return basePrice;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public java.time.LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
