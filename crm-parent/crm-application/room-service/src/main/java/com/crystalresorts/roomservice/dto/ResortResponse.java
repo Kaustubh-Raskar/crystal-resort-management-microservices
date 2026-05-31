@@ -6,21 +6,20 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RoomRequest {
-
-    private Long resortId;
-    private String roomNumber;
-    private Integer floor;
-    private String type;
-    private Integer capacity;
-    private BigDecimal basePrice;
-    private String description;
+public class ResortResponse {
+    private Long id;
+    private String name;
+    private String city;
+    private String address;
+    private Double rating;
     private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

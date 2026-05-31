@@ -30,4 +30,10 @@ public interface RoomAvailabilityService {
     void markAsBooked(Long roomId, LocalDate date, Long bookingId);
 
     void markAsAvailable(Long roomId, LocalDate date);
+
+    /**
+     * Returns the list of room IDs (subset of the provided roomIds) that are fully available
+     * for every date in the given inclusive date range.
+     */
+    List<Long> getRoomsAvailableForRange(List<Long> roomIds, LocalDate startDate, LocalDate endDate);
 }

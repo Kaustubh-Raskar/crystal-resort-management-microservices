@@ -3,6 +3,9 @@ package com.crystalresorts.roomservice.controller;
 import com.crystalresorts.roomservice.dto.RoomAvailabilityRequest;
 import com.crystalresorts.roomservice.dto.RoomAvailabilityResponse;
 import com.crystalresorts.roomservice.service.RoomAvailabilityService;
+import com.crystalresorts.roomservice.service.RoomService;
+import com.crystalresorts.roomservice.dto.RoomResponse;
+import com.crystalresorts.roomservice.dto.RoomWithResortResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,9 @@ public class RoomAvailabilityController {
 
     @Autowired
     private RoomAvailabilityService availabilityService;
+
+    @Autowired
+    private RoomService roomService;
 
     /**
      * Add availability record for a room (ADMIN only)
@@ -146,5 +152,45 @@ public class RoomAvailabilityController {
         log.info("Marking room: {} as available on date: {}", roomId, date);
         availabilityService.markAsAvailable(roomId, date);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Given a list of roomIds and a date range, return the Room details
+     * for rooms that are fully available for every date in the range.
+     */
+    @GetMapping("/rooms")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<RoomResponse>> getAvailableRoomsForRoomIds(
+            @RequestParam List<Long> roomIds,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
+
+        log.info("Checking availability for rooms {} between {} and {}", roomIds, startDate, endDate);
+
+        List<Long> availableRoomIds = availabilityService.getRoomsAvailableForRange(roomIds, startDate, endDate);
+
+        List<RoomResponse> rooms = roomService.getRoomsByIds(availableRoomIds);
+        return ResponseEntity.ok(rooms);
+    }
+
+    /**
+     * BFF endpoint: Get available rooms for a resort within a date range,
+     * enriched with resort information (name, city, address, rating).
+     * Single call returns both room and resort details.
+     */
+    @GetMapping("/resort/{resortId}/available")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<RoomWithResortResponse>> getAvailableRoomsForResort(
+            @PathVariable Long resortId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
+
+        log.info("Fetching available rooms for resort {} with details between {} and {}",
+                resortId, startDate, endDate);
+
+        List<RoomWithResortResponse> rooms = roomService.getAvailableRoomsForResortWithinDateRange(
+                resortId, startDate, endDate);
+
+        return ResponseEntity.ok(rooms);
     }
 }

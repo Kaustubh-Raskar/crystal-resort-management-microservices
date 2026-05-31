@@ -22,6 +22,9 @@ public interface RoomAvailabilityRepository extends JpaRepository<RoomAvailabili
 
     List<RoomAvailabilityEntity> findByRoomIdAndIsAvailable(Long roomId, Boolean isAvailable);
 
+    List<RoomAvailabilityEntity> findByRoomIdInAndAvailableDateBetween(
+            List<Long> roomIds, LocalDate startDate, LocalDate endDate);
+
     @Query("SELECT ra FROM RoomAvailabilityEntity ra WHERE ra.roomId = :roomId " +
            "AND ra.availableDate >= :startDate AND ra.availableDate <= :endDate " +
            "AND ra.isAvailable = true")

@@ -12,6 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @Transactional
@@ -160,5 +164,31 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         availabilityRepository.save(entity);
 
         log.info("Room marked as available");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getRoomsAvailableForRange(List<Long> roomIds, LocalDate startDate, LocalDate endDate) {
+        log.info("Checking availability for rooms: {} between {} and {}", roomIds, startDate, endDate);
+
+        if (roomIds == null || roomIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<RoomAvailabilityEntity> entities = availabilityRepository.findByRoomIdInAndAvailableDateBetween(roomIds, startDate, endDate);
+
+        long days = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        Map<Long, Set<LocalDate>> availableDatesByRoom = entities.stream()
+                .filter(e -> Boolean.TRUE.equals(e.getIsAvailable()))
+                .collect(Collectors.groupingBy(RoomAvailabilityEntity::getRoomId,
+                        Collectors.mapping(RoomAvailabilityEntity::getAvailableDate, Collectors.toSet())));
+
+        List<Long> fullyAvailable = availableDatesByRoom.entrySet().stream()
+                .filter(entry -> entry.getValue().size() == days)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return fullyAvailable;
     }
 }
